@@ -5,9 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Order represents a customer's entire purchase.
- * It stores a list of OrderItem objects (drinks, tacos, chips, etc.)
- * and can calculate the total or print a simple receipt.
+ * Represents a customer's order. The Order stores a list of
+ * OrderItem objects such as drinks, tacos, and chips.
+ * It provides methods to add items, calculate the total cost,
+ * and print a formatted receipt.
  */
 public class Order {
 
@@ -33,9 +34,10 @@ public class Order {
     }
 
 
+
     public String toReceiptString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("---- Receipt ----\n");
+        sb.append("---- Receipt ----\n"); // append adds the text to the end of the current builder
         for (OrderItem item : items) {
             sb.append(item.getName())
                     .append(" .... $")

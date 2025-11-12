@@ -2,10 +2,11 @@ package com.pluralsight;
 
 import java.math.BigDecimal;
 
+/*A drink has a name and a price, and does not support toppings or customization, like tacos.
+*/
 public class Drink implements OrderItem {
-
-    private String name;
-    private BigDecimal price;
+    private final String name; // (final) When it created a drink, name/price won’t change
+    private final BigDecimal price;
 
     public Drink(String name, BigDecimal price) {
         this.name = name;
@@ -14,7 +15,6 @@ public class Drink implements OrderItem {
 
     @Override
     public String getName() {
-
         return name;
     }
 
@@ -23,3 +23,4 @@ public class Drink implements OrderItem {
         return price;
     }
 }
+
