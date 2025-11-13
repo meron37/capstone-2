@@ -34,7 +34,7 @@ public class Main {
             // Handle menu selection
             switch (choice) {
 
-             // Add a drink to the order
+                // Add a drink to the order
                 case "1":
                     addDrink(order);
                     break;
@@ -87,7 +87,6 @@ public class Main {
         String sizeLabel = "";          // Will store Small/Medium/Large
         BigDecimal price = BigDecimal.ZERO; // Will store the price
 
-
         switch (sizeChoice) {
             case "1":
                 sizeLabel = "Small";
@@ -118,14 +117,15 @@ public class Main {
             flavor = "Drink";
         }
 
-        // Create final drink name, e.g., "Horchata (Medium)"
-        String displayName = flavor + " (" + sizeLabel + ")";
+        // Create final drink name (flavor); size is stored separately in the Drink object
+        String displayName = flavor;
 
         // Add the created drink to the order
-        order.addItem(new Drink(displayName, price));
+        // Pass flavor as name, price, and sizeLabel so Order can print size using getSize()
+        order.addItem(new Drink(flavor, price, sizeLabel));
 
         // Confirm addition to the user
-        System.out.println("Added: " + displayName + " - $" + price);
+        System.out.println("Added: " + displayName + " (" + sizeLabel + ") - $" + price);
         System.out.println("Current total: $" + order.getTotal());
     }
 
