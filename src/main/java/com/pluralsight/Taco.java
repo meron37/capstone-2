@@ -20,4 +20,20 @@ public abstract class Taco implements OrderItem {
     protected String otherToppings; // onions, cilantro, etc.
     protected String sauces;        // hot, mild, verde, etc.
 
+    public Taco(String size, String shell, boolean deepFried, String meat, boolean extraMeat,
+                String cheese, boolean extraCheese, String otherToppings, String sauces) {
+
+        this.size = size;
+        this.shell = shell;
+        this.deepFried = deepFried;
+        this.meat = meat;
+        this.extraMeat = extraMeat;
+        this.cheese = cheese;
+        this.extraCheese = extraCheese;
+        this.otherToppings = otherToppings;
+        this.sauces = sauces;
+    }
+
+
+
 }
