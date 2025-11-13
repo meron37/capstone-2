@@ -35,5 +35,21 @@ public abstract class Taco implements OrderItem {
     }
 
 
+    // Returns the formatted taco name
+    @Override
+    public String getName() {
+        return size + " Taco (" + shell + ")";
+    }
 
+
+    //Returns the taco size
+    @Override
+    public String getSize() {
+        return size;
+    }
+
+    // Each taco type must calculate its price
+
+    @Override
+    public abstract BigDecimal getPrice();
 }
