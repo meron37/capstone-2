@@ -47,10 +47,13 @@ Clean, structured output for users
 
 ### Add Drink
 ![Order Screen](src/main/resources/Images/img_8.png)
+
 ### Add Chips and Salsa
 ![Order Screen](src/main/resources/Images/img_9.png)
+
 ### Check out 
 ![Order Screen](src/main/resources/Images/img_10.png)
+
 
 # What I have learned 
 ### Console Application Design
