@@ -22,7 +22,7 @@ Newest items displayed first
 Clean, structured output for users
 
 # How to Run
-![Home Screen](src/main/resources/receipts/Images/img.png)
+![img.png](img.png)![Home Screen](src/main/resources/receipts/Images/img.png)
 
 ### Home Screen
 ![Order Screen](src/main/resources/Images/img_1.png)
