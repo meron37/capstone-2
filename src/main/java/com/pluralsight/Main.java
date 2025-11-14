@@ -13,12 +13,9 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Main program for the Taco Shop application.
- * This class controls the main menu (Home Screen), starting new orders,
- * adding tacos / drinks / chips, checking out, and saving receipts.
  */
 public class Main {
 
-    // Shared Scanner for reading user input from the console
     private static final Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -27,8 +24,6 @@ public class Main {
         System.out.println("Good food, good vibes — create what you crave. Every choice matters.\n");
         AsciiArt.printLog();   // your ASCII art banner
 
-        // =================== MAIN APPLICATION LOOP (HOME SCREEN) ===================
-        // This loop keeps showing the Home Screen until the user chooses Exit (0).
         while (true) {
             // ------------- HOME SCREEN -------------
             System.out.println("\n=== Home Screen ===");
@@ -39,10 +34,10 @@ public class Main {
             String homeChoice = sc.nextLine().trim();
 
             switch (homeChoice) {
-                case "1" -> startNewOrder(); // Start a brand new customer order
+                case "1" -> startNewOrder();
                 case "0" -> {
                     System.out.println("Goodbye!");
-                    return; // Ends the program
+                    return;
                 }
                 default -> System.out.println("Invalid choice. Please choose 1 or 0.");
             }
@@ -51,12 +46,10 @@ public class Main {
 
     /**
      * Starts a new order and shows the Order Screen.
-     * This method handles the full order flow for one customer
-     * (adding items, checkout, or cancel).
      */
     private static void startNewOrder() {
 
-        // --- Ask for a name for the order, like at a real restaurant ---
+        // ask for a name for the order, like a restaurant
         System.out.print("What name should we put on this order? ");
         String orderName = sc.nextLine().trim();
         if (orderName.isEmpty()) {
@@ -64,14 +57,13 @@ public class Main {
         }
         System.out.println("Thanks, " + orderName + "! Let's start your order.");
 
-        // create a new order that starts empty
-        Order order = new Order();
+        // create a new Order *with* the customer name
+        Order order = new Order(orderName);
 
         while (true) {
             // --------- ORDER SCREEN (show newest items first) ----------
             System.out.println("\n=== Order Screen ===");
 
-            // Get current items in the order
             List<OrderItem> items = order.getItems();
             if (items.isEmpty()) {
                 System.out.println("(No items in this order yet)");
@@ -83,7 +75,6 @@ public class Main {
                 }
             }
 
-            // Show the order options for this order
             System.out.println("\nOrder Screen:");
             System.out.println("1) Add Taco");
             System.out.println("2) Add Drink");
@@ -97,7 +88,6 @@ public class Main {
             switch (choice) {
                 case "1" -> {
                     // FULL FLOW: Taco -> Drink -> Chips -> Checkout -> back to Home
-                    // This path gives a full combo experience
                     addTaco(order);
                     addDrink(order);
                     addChips(order);
@@ -108,10 +98,7 @@ public class Main {
 
                 case "2" -> addDrink(order);       // optional: drink only
                 case "3" -> addChips(order);       // optional: chips only
-
                 case "4" -> {
-                    // Go through checkout; if confirmed, this order is done,
-                    // and we go back to the Home Screen.
                     boolean finished = checkoutFlow(order);
                     if (finished) {
                         // confirmed: go back to Home
@@ -119,28 +106,16 @@ public class Main {
                     }
                     // if not finished, stay on Order Screen
                 }
-
                 case "0" -> {
                     System.out.println("Order canceled. Returning to Home Screen.");
                     return;
                 }
-
                 default -> System.out.println("Invalid choice.");
             }
         }
     }
 
     // -------------------- CHECKOUT SCREEN --------------------
-
-    /**
-     * Handles the checkout flow:
-     * - Shows the receipt
-     * - Asks user to Confirm or Cancel
-     * - Saves the receipt if confirmed
-     *
-     * order the current order
-     * @return true if the order was confirmed, false if canceled or invalid
-     */
     private static boolean checkoutFlow(Order order) {
         if (order.isEmpty()) {
             System.out.println("Order is empty. Add at least one item before checkout.");
@@ -148,7 +123,6 @@ public class Main {
         }
 
         System.out.println("\n=== Checkout ===");
-        // Print the full receipt to the console
         System.out.println(order.toReceiptString());
 
         System.out.println("1) Confirm");
@@ -160,12 +134,10 @@ public class Main {
             case "1":
                 System.out.println("Order confirmed! Saving receipt...");
                 saveReceipt(order);
-                return true;   // order is done
-
+                return true;
             case "0":
                 System.out.println("Checkout canceled. Returning to Order Screen.");
-                return false;  // still on this order
-
+                return false;
             default:
                 System.out.println("Invalid choice. Returning to Order Screen.");
                 return false;
@@ -173,11 +145,6 @@ public class Main {
     }
 
     // -------------------- DRINK --------------------
-
-    /**
-     * Adds a drink to the order.
-     * Asks the user for size (which sets the price) and flavor.
-     */
     private static void addDrink(Order order) {
 
         System.out.println("\n===== Add Drink ======");
@@ -190,7 +157,6 @@ public class Main {
         String sizeLabel;
         BigDecimal price;
 
-        // Map the user’s size choice to a label and price
         switch (sizeChoice) {
             case "1" -> {
                 sizeLabel = "Small";
@@ -210,25 +176,17 @@ public class Main {
             }
         }
 
-        // Ask the user for drink flavor
         System.out.print("Enter flavor (e.g., Horchata, Coke): ");
         String flavor = sc.nextLine().trim();
         if (flavor.isEmpty()) flavor = "Drink";
 
-        // Create final display name using flavor + size
         String displayName = flavor + " (" + sizeLabel + ")";
 
-        // Add the created drink to the order (size is also passed)
         order.addItem(new Drink(displayName, price, sizeLabel));
         System.out.println("Added: " + displayName + " - $" + price);
     }
 
     // -------------------- CHIPS --------------------
-
-    /**
-     * Adds a Chips & Salsa item to the order.
-     * Lets the user choose the salsa type from a list.
-     */
     private static void addChips(Order order) {
 
         System.out.println("\n ===== Add Chips & Salsa ($1.50) =====");
@@ -255,24 +213,11 @@ public class Main {
             return;
         }
 
-        // Add chips item to the order
         order.addItem(new ChipsAndSalsa(salsaType));
         System.out.println("Added: Chips & " + salsaType + " - $1.50");
     }
 
     // -------------------- TACO --------------------
-
-    /**
-     * Full taco-building flow:
-     * - Choose shell
-     * - Choose size
-     * - Optional deep fried
-     * - Meat & extra meat
-     * - Cheese & extra cheese
-     * - Regular toppings
-     * - Sauces
-     * Then creates a Taco object and adds it to the order.
-     */
     private static void addTaco(Order order) {
 
         System.out.println("\n ======  Add Taco =====");
@@ -317,7 +262,7 @@ public class Main {
             return;
         }
 
-        // Show the pricing table for toppings and extras
+        // Show the pricing table
         printToppingsMenu();
 
         // Deep fried?
@@ -394,7 +339,7 @@ public class Main {
         System.out.print("Enter comma-separated list or leave blank: ");
         String sauces = sc.nextLine().trim();
 
-        // Create Taco object with all the selected options
+        // Create Taco
         Taco taco = new Taco(
                 size, shell, deepFried,
                 meat, extraMeat,
@@ -402,10 +347,9 @@ public class Main {
                 toppings, sauces
         );
 
-        // Add taco to the order
         order.addItem(taco);
 
-        // Summary of what was added
+        // Summary
         System.out.println("\nAdded Taco:");
         System.out.println("- Name: " + taco.getName());
         System.out.println("- Shell: " + shell);
@@ -462,10 +406,6 @@ public class Main {
     }
 
     // -------------------- SAVE RECEIPT --------------------
-    /**
-     * Saves the receipt text to a .txt file in src/main/resources/receipts
-     * using a timestamp-based file name.
-     */
     private static void saveReceipt(Order order) {
         try {
             Path dir = Paths.get("src", "main", "resources", "receipts");
@@ -486,10 +426,6 @@ public class Main {
         }
     }
 
-    /**
-     * Reads a yes/no answer from the user.
-     * Returns true if the user starts the input with 'y' or 'Y'.
-     */
     private static boolean readYesNo() {
         String input = sc.nextLine().trim().toLowerCase();
         return input.startsWith("y");
