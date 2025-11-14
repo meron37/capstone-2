@@ -1,27 +1,49 @@
 package com.pluralsight;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
- * Abstract base class for all taco types.
- * Stores shared taco attributes such as size, shell, meat, cheese,
- * toppings, sauces, and whether the taco is deep fried.
- * Each concrete taco must implement its own price calculation.
+ * Taco represents a fully customizable taco.
+ * Includes topping price calculation.
  */
-public abstract class Taco implements OrderItem {
+public class Taco implements OrderItem {
 
-    protected String size;        // Single Taco, 3-Taco Plate, Burrito
-    protected String shell;       // Corn, Flour, Hard Shell, Bowl
+    protected String size;
+    protected String shell;
     protected boolean deepFried;
-    protected String meat;// protected access modifier allows members (fields, methods, and constructors) to be accessible within the same package and by subclasses, even if those subclasses are in a different package.
+
+    protected String meat;
     protected boolean extraMeat;
+
     protected String cheese;
     protected boolean extraCheese;
-    protected String otherToppings; // onions, cilantro, etc.
-    protected String sauces;        // hot, mild, verde, etc.
 
-    public Taco(String size, String shell, boolean deepFried, String meat, boolean extraMeat,
-                String cheese, boolean extraCheese, String otherToppings, String sauces) {
+    protected List<Topping> toppings;     // <-- REAL toppings now
+    protected String sauces;
+
+    // Base price constants
+    private static final BigDecimal SINGLE_BASE  = new BigDecimal("3.00");
+    private static final BigDecimal PLATE_BASE   = new BigDecimal("7.50");
+    private static final BigDecimal BURRITO_BASE = new BigDecimal("6.00");
+
+    // Extra charges
+    private static final BigDecimal EXTRA_MEAT_PRICE   = new BigDecimal("1.00");
+    private static final BigDecimal EXTRA_CHEESE_PRICE = new BigDecimal("0.50");
+    private static final BigDecimal DEEP_FRY_PRICE     = new BigDecimal("0.75");
+
+    // -------------------------
+    // Constructor
+    // -------------------------
+    public Taco(String size,
+                String shell,
+                boolean deepFried,
+                String meat,
+                boolean extraMeat,
+                String cheese,
+                boolean extraCheese,
+                List<Topping> toppings,
+                String sauces) {
 
         this.size = size;
         this.shell = shell;
@@ -30,26 +52,58 @@ public abstract class Taco implements OrderItem {
         this.extraMeat = extraMeat;
         this.cheese = cheese;
         this.extraCheese = extraCheese;
-        this.otherToppings = otherToppings;
+        this.toppings = toppings;
         this.sauces = sauces;
     }
 
-
-    // Returns the formatted taco name
     @Override
     public String getName() {
         return size + " Taco (" + shell + ")";
     }
 
-
-    //Returns the taco size
     @Override
     public String getSize() {
         return size;
     }
 
-    // Each taco type must calculate its price
-
     @Override
-    public abstract BigDecimal getPrice();
+    public BigDecimal getPrice() {
+        return calculatePrice();
+    }
+
+    // -------------------------
+    // ⭐ PRICE CALCULATION
+    // -------------------------
+    public BigDecimal calculatePrice() {
+        BigDecimal total = BigDecimal.ZERO;
+
+        // Base cost
+        switch (size) {
+            case "Single Taco" -> total = total.add(SINGLE_BASE);
+            case "3-Taco Plate" -> total = total.add(PLATE_BASE);
+            case "Burrito" -> total = total.add(BURRITO_BASE);
+            default -> total = total.add(SINGLE_BASE);
+        }
+
+        // Extra meat
+        if (extraMeat) total = total.add(EXTRA_MEAT_PRICE);
+
+        // Extra cheese
+        if (extraCheese) total = total.add(EXTRA_CHEESE_PRICE);
+
+        // Deep fried cost
+        if (deepFried) total = total.add(DEEP_FRY_PRICE);
+
+        // ⭐ Add premium topping prices
+        for (Topping topping : toppings) {
+            total = total.add(topping.getPrice());
+        }
+
+        return total;
+    }
+
+    // Optional
+    public String getDetails() {
+        return "Toppings: " + toppings + "\nSauces: " + sauces;
+    }
 }
