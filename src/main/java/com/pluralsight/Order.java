@@ -24,9 +24,24 @@ public class Order {
     // when the order was created
     private final LocalDateTime orderDate;
 
-    public Order() {
+    // customer name for this order
+    private final String customerName;
+
+    /**
+     * Main constructor for an Order WITH a customer name.
+     */
+    public Order(String customerName) {
         this.items = new ArrayList<>();
         this.orderDate = LocalDateTime.now();
+        this.customerName = customerName;
+    }
+
+    /**
+     * Old constructor kept for compatibility.
+     * Defaults the customer name to "Guest".
+     */
+    public Order() {
+        this("Guest");
     }
 
     public void addItem(OrderItem item) {
@@ -79,6 +94,10 @@ public class Order {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm");
 
         sb.append("---- Receipt ----\n");
+
+        // show name on receipt
+        sb.append("Order For: ").append(customerName).append("\n");
+
         sb.append("Date: ")
                 .append(orderDate.format(formatter))
                 .append("\n\n");
