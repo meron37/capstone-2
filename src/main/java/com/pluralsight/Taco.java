@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class Taco implements OrderItem {
 
-    protected String size;
+    protected String size; // protected access fields, methods, and constructors/ signature
     protected String shell;
     protected boolean deepFried;
 
@@ -27,6 +27,7 @@ public class Taco implements OrderItem {
     private static final BigDecimal PLATE_BASE   = new BigDecimal("9.00");
     private static final BigDecimal BURRITO_BASE = new BigDecimal("8.50");
 
+    // Custom method
     public Taco(String size,
                 String shell,
                 boolean deepFried,
