@@ -1,21 +1,34 @@
 package com.pluralsight;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Represents a customer's order. The Order stores a list of
  * OrderItem objects such as drinks, tacos, and chips.
- * It provides methods to add items, calculate the total cost,
+ * It provides methods to add items, calculate totals and tax,
  * and print a formatted receipt.
  */
 public class Order {
 
-    // a list that holds all the items (each item implements OrderItem)
-    private final List<OrderItem> items = new ArrayList<>();
+    // 8.25% tax
+    private static final BigDecimal TAX_RATE = new BigDecimal("0.0825");
 
-    // Adds an item( tacos, drink, Taco)
+    // list of items in this order
+    private final List<OrderItem> items;
+
+    // when the order was created
+    private final LocalDateTime orderDate;
+
+    public Order() {
+        this.items = new ArrayList<>();
+        this.orderDate = LocalDateTime.now();
+    }
+
     public void addItem(OrderItem item) {
         items.add(item);
     }
@@ -24,27 +37,75 @@ public class Order {
         return items.isEmpty();
     }
 
-    // loop through all items and sum up
-    public BigDecimal getTotal() {
-        BigDecimal total = BigDecimal.ZERO; // start from 0
+    /**
+     * Needed by Main.startNewOrder() so it can display
+     * "Current Order (newest first)".
+     */
+    public List<OrderItem> getItems() {
+        // return a copy so outside code can’t modify internal list by accident
+        return new ArrayList<>(items);
+    }
+
+    /** Subtotal before tax */
+    public BigDecimal getSubtotal() {
+        BigDecimal total = BigDecimal.ZERO;
         for (OrderItem item : items) {
-            total = total.add(item.getPrice()); // add each item's price
+            total = total.add(item.getPrice());
         }
         return total;
     }
 
+    /** Tax amount */
+    public BigDecimal getTax() {
+        return getSubtotal()
+                .multiply(TAX_RATE)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 
+    /** Total including tax */
+    public BigDecimal getTotalWithTax() {
+        return getSubtotal().add(getTax());
+    }
 
+    /** Kept in case you still call getTotal() somewhere */
+    public BigDecimal getTotal() {
+        return getTotalWithTax();
+    }
+
+    /** Builds the printable receipt text. */
     public String toReceiptString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("---- Receipt ----\n"); // append adds the text to the end of the current builder
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm");
+
+        sb.append("---- Receipt ----\n");
+        sb.append("Date: ")
+                .append(orderDate.format(formatter))
+                .append("\n\n");
+
         for (OrderItem item : items) {
             sb.append(item.getName())
                     .append(" .... $")
-                    .append(item.getPrice())
+                    .append(String.format("%.2f", item.getPrice().doubleValue()))
                     .append("\n");
         }
-        sb.append("TOTAL: $").append(getTotal()).append("\n");
+
+        BigDecimal subtotal = getSubtotal();
+        BigDecimal tax = getTax();
+        BigDecimal total = getTotalWithTax();
+
+        sb.append("\nSUBTOTAL: $")
+                .append(String.format("%.2f", subtotal.doubleValue()))
+                .append("\n");
+
+        sb.append("TAX (8.25%): $")
+                .append(String.format("%.2f", tax.doubleValue()))
+                .append("\n");
+
+        sb.append("TOTAL: $")
+                .append(String.format("%.2f", total.doubleValue()))
+                .append("\n");
+
         return sb.toString();
     }
 

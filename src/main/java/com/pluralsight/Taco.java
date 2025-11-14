@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Taco represents a fully customizable taco.
- * Includes topping price calculation.
+ * Prices follow the Taco Prices + Toppings table.
  */
 public class Taco implements OrderItem {
 
@@ -19,22 +19,14 @@ public class Taco implements OrderItem {
     protected String cheese;
     protected boolean extraCheese;
 
-    protected List<Topping> toppings;     // <-- REAL toppings now
+    protected List<Topping> toppings;
     protected String sauces;
 
-    // Base price constants
-    private static final BigDecimal SINGLE_BASE  = new BigDecimal("3.00");
-    private static final BigDecimal PLATE_BASE   = new BigDecimal("7.50");
-    private static final BigDecimal BURRITO_BASE = new BigDecimal("6.00");
+    // Base shell prices
+    private static final BigDecimal SINGLE_BASE  = new BigDecimal("3.50");
+    private static final BigDecimal PLATE_BASE   = new BigDecimal("9.00");
+    private static final BigDecimal BURRITO_BASE = new BigDecimal("8.50");
 
-    // Extra charges
-    private static final BigDecimal EXTRA_MEAT_PRICE   = new BigDecimal("1.00");
-    private static final BigDecimal EXTRA_CHEESE_PRICE = new BigDecimal("0.50");
-    private static final BigDecimal DEEP_FRY_PRICE     = new BigDecimal("0.75");
-
-    // -------------------------
-    // Constructor
-    // -------------------------
     public Taco(String size,
                 String shell,
                 boolean deepFried,
@@ -72,29 +64,37 @@ public class Taco implements OrderItem {
     }
 
     // -------------------------
-    // ⭐ PRICE CALCULATION
+    // PRICE CALCULATION
     // -------------------------
     public BigDecimal calculatePrice() {
-        BigDecimal total = BigDecimal.ZERO;
+        BigDecimal total = getShellBasePrice();
 
-        // Base cost
-        switch (size) {
-            case "Single Taco" -> total = total.add(SINGLE_BASE);
-            case "3-Taco Plate" -> total = total.add(PLATE_BASE);
-            case "Burrito" -> total = total.add(BURRITO_BASE);
-            default -> total = total.add(SINGLE_BASE);
+        // base meat price if a meat was chosen
+        if (meat != null && !meat.isBlank()) {
+            total = total.add(getBaseMeatPrice());
         }
 
-        // Extra meat
-        if (extraMeat) total = total.add(EXTRA_MEAT_PRICE);
+        // base cheese price if cheese chosen
+        if (cheese != null && !cheese.isBlank()) {
+            total = total.add(getBaseCheesePrice());
+        }
 
-        // Extra cheese
-        if (extraCheese) total = total.add(EXTRA_CHEESE_PRICE);
+        // extra meat price
+        if (extraMeat) {
+            total = total.add(getExtraMeatPrice());
+        }
 
-        // Deep fried cost
-        if (deepFried) total = total.add(DEEP_FRY_PRICE);
+        // extra cheese price
+        if (extraCheese) {
+            total = total.add(getExtraCheesePrice());
+        }
 
-        // ⭐ Add premium topping prices
+        // deep fried cost
+        if (deepFried) {
+            total = total.add(getDeepFryPrice());
+        }
+
+        // premium toppings (if any) – regular toppings have price 0.00
         for (Topping topping : toppings) {
             total = total.add(topping.getPrice());
         }
@@ -102,7 +102,67 @@ public class Taco implements OrderItem {
         return total;
     }
 
-    // Optional
+    // ---------- helper methods that map size → price ----------
+
+    private BigDecimal getShellBasePrice() {
+        return switch (size) {
+            case "Single Taco" -> SINGLE_BASE;
+            case "3-Taco Plate" -> PLATE_BASE;
+            case "Burrito" -> BURRITO_BASE;
+            default -> SINGLE_BASE;
+        };
+    }
+
+    // first serving of meat
+    private BigDecimal getBaseMeatPrice() {
+        return switch (size) {
+            case "Single Taco" -> new BigDecimal("1.00");
+            case "3-Taco Plate" -> new BigDecimal("2.00");
+            case "Burrito" -> new BigDecimal("3.00");
+            default -> BigDecimal.ZERO;
+        };
+    }
+
+    // extra meat
+    private BigDecimal getExtraMeatPrice() {
+        return switch (size) {
+            case "Single Taco" -> new BigDecimal("0.50");
+            case "3-Taco Plate" -> new BigDecimal("1.00");
+            case "Burrito" -> new BigDecimal("1.50");
+            default -> BigDecimal.ZERO;
+        };
+    }
+
+    // first serving of cheese
+    private BigDecimal getBaseCheesePrice() {
+        return switch (size) {
+            case "Single Taco" -> new BigDecimal("0.75");
+            case "3-Taco Plate" -> new BigDecimal("1.50");
+            case "Burrito" -> new BigDecimal("2.25");
+            default -> BigDecimal.ZERO;
+        };
+    }
+
+    // extra cheese
+    private BigDecimal getExtraCheesePrice() {
+        return switch (size) {
+            case "Single Taco" -> new BigDecimal("0.30");
+            case "3-Taco Plate" -> new BigDecimal("0.60");
+            case "Burrito" -> new BigDecimal("0.90");
+            default -> BigDecimal.ZERO;
+        };
+    }
+
+    // deep-fried price
+    private BigDecimal getDeepFryPrice() {
+        return switch (size) {
+            case "Single Taco" -> new BigDecimal("0.75");
+            case "3-Taco Plate" -> new BigDecimal("1.50");
+            case "Burrito" -> new BigDecimal("2.25");
+            default -> BigDecimal.ZERO;
+        };
+    }
+
     public String getDetails() {
         return "Toppings: " + toppings + "\nSauces: " + sauces;
     }

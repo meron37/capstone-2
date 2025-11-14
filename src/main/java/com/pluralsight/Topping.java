@@ -3,38 +3,28 @@ package com.pluralsight;
 import java.math.BigDecimal;
 
 /**
- * Represents a topping used in tacos
- * A topping has a name, an optional price, and an "extra".
+ * Represents a taco topping.
+ * Regular toppings are included (price = 0).
+ * Premium toppings or extras can have a positive price.
  */
 public class Topping {
 
-    private String name;
-    private BigDecimal price;
-    private boolean isExtra;
+    private final String name;
+    private final BigDecimal price;
+    private final boolean isExtra;
 
-    /**
-     * this is when a topping has no extra cost.
-     * Example: lettuce, onions, cilantro
-     */
+    // Regular (included) topping
     public Topping(String name) {
-        this.name = name.trim();
-        this.price = BigDecimal.ZERO;
-        this.isExtra = false;
+        this(name, BigDecimal.ZERO, false);
     }
 
-    /**
-     * This is when the topping has a cost.
-     * Example: extra cheese, premium meat, guacamole, etc.
-     */
+    // Topping with a price (extra)
     public Topping(String name, BigDecimal price, boolean isExtra) {
-        this.name = name.trim();
+        this.name = name;
         this.price = price;
         this.isExtra = isExtra;
     }
 
-    // -----------------------------
-    // Getters
-    // -----------------------------
     public String getName() {
         return name;
     }
@@ -47,15 +37,11 @@ public class Topping {
         return isExtra;
     }
 
-    // -----------------------------
-    //  method to print
-    // -----------------------------
     @Override
     public String toString() {
         if (price.compareTo(BigDecimal.ZERO) > 0) {
-            return name + (isExtra ? " (extra +$" + price + ")"
-                    : " (+$" + price + ")");
+            return name + " (+" + price + ")";
         }
-        return name; // free toppings
+        return name;
     }
 }

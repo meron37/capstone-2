@@ -7,10 +7,12 @@ import java.math.BigDecimal;
 public class Drink implements OrderItem {
     private final String name; // (final) When it created a drink, name/price won’t change
     private final BigDecimal price;
+    private final String size;
 
-    public Drink(String name, BigDecimal price) {
+    public Drink(String name, BigDecimal price, String Size) {
         this.name = name;
         this.price = price;
+        this.size = Size;
     }
 
     @Override
@@ -21,6 +23,10 @@ public class Drink implements OrderItem {
     @Override
     public BigDecimal getPrice() {
         return price;
+    }
+    @Override
+    public String getSize() {
+        return size;
     }
 }
 
