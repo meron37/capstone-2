@@ -2,6 +2,8 @@ package com.pluralsight;
 
 import java.math.BigDecimal;
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,8 +13,6 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Main program for the Taco Shop application.
- * Allows users to add drinks, chips & salsa, custom tacos,
- * checkout, and saves a receipt file into the resources/receipts folder.
  */
 public class Main {
 
@@ -20,59 +20,124 @@ public class Main {
 
     public static void main(String[] args) {
 
+        System.out.println("Welcome to ByteMyTaco! 😊");
+        System.out.println("Good food, good vibes — create what you crave. Every choice matters.\n");
+        AsciiArt.printLog();   // your ASCII art banner
+
+        while (true) {
+            // ------------- HOME SCREEN -------------
+            System.out.println("\n=== Home Screen ===");
+            System.out.println("1) New Order");
+            System.out.println("0) Exit");
+            System.out.print("Choose: ");
+
+            String homeChoice = sc.nextLine().trim();
+
+            switch (homeChoice) {
+                case "1" -> startNewOrder();
+                case "0" -> {
+                    System.out.println("Goodbye!");
+                    return;
+                }
+                default -> System.out.println("Invalid choice. Please choose 1 or 0.");
+            }
+        }
+    }
+
+    /**
+     * Starts a new order and shows the Order Screen.
+     */
+    private static void startNewOrder() {
         Order order = new Order();
 
         while (true) {
-            System.out.println("\n=== Taco Shop Menu ===");
-            System.out.println("1) Add Drink");
-            System.out.println("2) Add Chips & Salsa");
-            System.out.println("3) Add Taco");
+            // --------- ORDER SCREEN (show newest items first) ----------
+            System.out.println("\n=== Order Screen ===");
+
+            List<OrderItem> items = order.getItems();
+            if (items.isEmpty()) {
+                System.out.println("(No items in this order yet)");
+            } else {
+                System.out.println("Current Order (newest first):");
+                for (int i = items.size() - 1; i >= 0; i--) {
+                    OrderItem item = items.get(i);
+                    System.out.println(" - " + item.getName() + "  $" + item.getPrice());
+                }
+            }
+
+            System.out.println("\nOrder Screen:");
+            System.out.println("1) Add Taco");
+            System.out.println("2) Add Drink");
+            System.out.println("3) Add Chips & Salsa");
             System.out.println("4) Checkout");
-            System.out.println("0) Exit");
+            System.out.println("0) Cancel Order (go back to Home)");
             System.out.print("Choose: ");
 
             String choice = sc.nextLine().trim();
 
             switch (choice) {
-                case "1":
+                case "1" -> {
+                    // FULL FLOW: Taco -> Drink -> Chips -> Checkout -> back to Home
+                    addTaco(order);
                     addDrink(order);
-                    break;
-
-                case "2":
                     addChips(order);
-                    break;
-
-                case "3":
-                    addTaco(order);      // ← now interactive
-                    break;
-
-                case "4":
-                    if (order.isEmpty()) {
-                        System.out.println("Order is empty. Add at least one item please select chipsAndSalsa or drink.");
-                    } else {
-                        order.printReceipt(); // print on screen
-                        saveReceipt(order);   // save to file
-                        order = new Order();  // reset for next order
-                    }
-                    break;
-
-                case "0":
-                    System.out.println("Goodbye!");
+                    boolean finished = checkoutFlow(order);
+                    // after checkout (confirm or cancel) go back to Home Screen
                     return;
+                }
 
-                default:
-                    System.out.println("Invalid choice.");
-                    break;
+                case "2" -> addDrink(order);       // optional: drink only
+                case "3" -> addChips(order);       // optional: chips only
+                case "4" -> {
+                    boolean finished = checkoutFlow(order);
+                    if (finished) {
+                        // confirmed: go back to Home
+                        return;
+                    }
+                    // if not finished, stay on Order Screen
+                }
+                case "0" -> {
+                    System.out.println("Order canceled. Returning to Home Screen.");
+                    return;
+                }
+                default -> System.out.println("Invalid choice.");
             }
         }
     }
 
-    // --------------------------------------------------------------------
-    // ADD DRINK
-    // --------------------------------------------------------------------
+    // -------------------- CHECKOUT SCREEN --------------------
+    private static boolean checkoutFlow(Order order) {
+        if (order.isEmpty()) {
+            System.out.println("Order is empty. Add at least one item before checkout.");
+            return false;
+        }
+
+        System.out.println("\n=== Checkout ===");
+        System.out.println(order.toReceiptString());
+
+        System.out.println("1) Confirm");
+        System.out.println("0) Cancel (go back to Order Screen)");
+        System.out.print("Choose: ");
+        String choice = sc.nextLine().trim();
+
+        switch (choice) {
+            case "1":
+                System.out.println("Order confirmed! Saving receipt...");
+                saveReceipt(order);
+                return true;
+            case "0":
+                System.out.println("Checkout canceled. Returning to Order Screen.");
+                return false;
+            default:
+                System.out.println("Invalid choice. Returning to Order Screen.");
+                return false;
+        }
+    }
+
+    // -------------------- DRINK --------------------
     private static void addDrink(Order order) {
 
-        System.out.println("\n-- Add Drink --");
+        System.out.println("\n===== Add Drink ======");
         System.out.println("1) Small  ($2.00)");
         System.out.println("2) Medium ($2.50)");
         System.out.println("3) Large  ($3.00)");
@@ -83,21 +148,22 @@ public class Main {
         BigDecimal price;
 
         switch (sizeChoice) {
-            case "1":
+            case "1" -> {
                 sizeLabel = "Small";
                 price = new BigDecimal("2.00");
-                break;
-            case "2":
+            }
+            case "2" -> {
                 sizeLabel = "Medium";
                 price = new BigDecimal("2.50");
-                break;
-            case "3":
+            }
+            case "3" -> {
                 sizeLabel = "Large";
                 price = new BigDecimal("3.00");
-                break;
-            default:
+            }
+            default -> {
                 System.out.println("Invalid size.");
                 return;
+            }
         }
 
         System.out.print("Enter flavor (e.g., Horchata, Coke): ");
@@ -110,12 +176,10 @@ public class Main {
         System.out.println("Added: " + displayName + " - $" + price);
     }
 
-    // --------------------------------------------------------------------
-    // ADD CHIPS & SALSA
-    // --------------------------------------------------------------------
+    // -------------------- CHIPS --------------------
     private static void addChips(Order order) {
 
-        System.out.println("\n-- Add Chips & Salsa ($1.50) --");
+        System.out.println("\n ===== Add Chips & Salsa ($1.50) =====");
         System.out.println("1) Salsa Verde");
         System.out.println("2) Salsa Roja");
         System.out.println("3) Chipotle");
@@ -143,13 +207,12 @@ public class Main {
         System.out.println("Added: Chips & " + salsaType + " - $1.50");
     }
 
-    // ADD TACO (FULLY INTERACTIVE CUSTOMTACO)
-    // --------------------------------------------------------------------
+    // -------------------- TACO --------------------
     private static void addTaco(Order order) {
 
-        System.out.println("\n-- Add Taco --");
+        System.out.println("\n ======  Add Taco =====");
 
-        // Choose shell
+        // Shell
         System.out.println("Select your shell:");
         System.out.println("1) Corn");
         System.out.println("2) Flour");
@@ -170,7 +233,7 @@ public class Main {
             return;
         }
 
-        // Choose size
+        // Size
         System.out.println("Select taco size:");
         System.out.println("1) Single Taco");
         System.out.println("2) 3-Taco Plate");
@@ -189,56 +252,150 @@ public class Main {
             return;
         }
 
-        //  Deep fried?
+        // Show the pricing table
+        printToppingsMenu();
+
+        // Deep fried?
         System.out.print("Would you like the taco deep fried? (y/n): ");
         boolean deepFried = readYesNo();
+        if (deepFried) {
+            BigDecimal fryCharge = switch (size) {
+                case "Single Taco" -> new BigDecimal("0.75");
+                case "3-Taco Plate" -> new BigDecimal("1.50");
+                case "Burrito" -> new BigDecimal("2.25");
+                default -> BigDecimal.ZERO;
+            };
+            System.out.println("Deep fried added (+" + fryCharge + ")");
+        }
 
-        //  Meat + extra
-        System.out.print("Meat (carne asada, al pastor, etc.). Leave blank for none: ");
+        // Meat + extra
+        System.out.print("Meat toppings are (carne asada | al pastor | carnitas | pollo | chorizo | pescado). Leave blank for none: ");
         String meat = sc.nextLine().trim();
         boolean extraMeat = false;
+
         if (!meat.isEmpty()) {
             System.out.print("Extra meat? (y/n): ");
             extraMeat = readYesNo();
+
+            if (extraMeat) {
+                BigDecimal extraMeatCharge = switch (size) {
+                    case "Single Taco" -> new BigDecimal("0.50");
+                    case "3-Taco Plate" -> new BigDecimal("1.00");
+                    case "Burrito" -> new BigDecimal("1.50");
+                    default -> BigDecimal.ZERO;
+                };
+                System.out.println("Extra meat added (+" + extraMeatCharge + ")");
+            }
         }
 
         // Cheese + extra
-        System.out.print("Cheese (Queso Fresco, Cheddar, etc.). Leave blank for none: ");
+        System.out.print("Cheese (Queso Fresco, Oaxaca, Cotija, Cheddar). Leave blank for none: ");
         String cheese = sc.nextLine().trim();
         boolean extraCheese = false;
+
         if (!cheese.isEmpty()) {
             System.out.print("Extra cheese? (y/n): ");
             extraCheese = readYesNo();
+
+            if (extraCheese) {
+                BigDecimal extraCheeseCharge = switch (size) {
+                    case "Single Taco" -> new BigDecimal("0.30");
+                    case "3-Taco Plate" -> new BigDecimal("0.60");
+                    case "Burrito" -> new BigDecimal("0.90");
+                    default -> BigDecimal.ZERO;
+                };
+                System.out.println("Extra cheese added (+" + extraCheeseCharge + ")");
+            }
         }
 
-        // Other toppings
-        System.out.println("Other toppings (lettuce, cilantro, onions, etc.).");
-        System.out.print("Enter comma-separated list or leave blank: ");
-        String otherToppings = sc.nextLine().trim();
+        // Regular toppings
+        System.out.println("Regular toppings (included): lettuce, cilantro, onions, tomatoes, jalapeños, radishes, pico de gallo, guacamole, corn.");
+        System.out.print("Enter the toppings you want add (comma-separated) or leave blank: ");
+        String toppingsInput = sc.nextLine().trim();
+        List<Topping> toppings = new ArrayList<>();
 
-        //  Sauces
+        if (!toppingsInput.isEmpty()) {
+            String[] parts = toppingsInput.split(",");
+            for (String raw : parts) {
+                String name = raw.trim();
+                if (!name.isEmpty()) {
+                    toppings.add(new Topping(name)); // included, price 0.00
+                }
+            }
+        }
+
+        // Sauces
         System.out.println("Select sauces (for example: Verde, Roja).");
         System.out.print("Enter comma-separated list or leave blank: ");
         String sauces = sc.nextLine().trim();
 
-        // Create the CustomTaco with all user choices
-        CustomTaco taco = new CustomTaco(
+        // Create Taco
+        Taco taco = new Taco(
                 size, shell, deepFried,
                 meat, extraMeat,
                 cheese, extraCheese,
-                otherToppings, sauces
+                toppings, sauces
         );
 
         order.addItem(taco);
 
-        System.out.println("Added Taco:");
-        System.out.println("- " + taco.getName());
-        System.out.println("- Price: $" + taco.getPrice());
+        // Summary
+        System.out.println("\nAdded Taco:");
+        System.out.println("- Name: " + taco.getName());
+        System.out.println("- Shell: " + shell);
+        System.out.println("- Size: " + size);
+        System.out.println("- Deep Fried: " + (deepFried ? "Yes": "No"));
+        System.out.println("- Meat: " + (meat.isEmpty() ? "None" : meat + (extraMeat ? " (extra)" : "")));
+        System.out.println("- Cheese: " + (cheese.isEmpty() ? "None" : cheese + (extraCheese ? " (extra)" : "")));
+
+        System.out.println("- Toppings:");
+        printToppings(toppings);
+
+        System.out.println("- Sauces: " + (sauces.isEmpty() ? "None" : sauces));
+        System.out.println("- PRICE (before tax): $" + taco.getPrice());
     }
 
-    // --------------------------------------------------------------------
-    // SAVE RECEIPT TO src/main/resources/receipts FOLDER (WRITER)
+    // --------- pricing table text ----------
+    private static void printToppingsMenu() {
+        System.out.println("\n==== Taco Prices ====");
+        System.out.println("Shell (corn / flour / hard shell / bowl)");
+        System.out.println("  Single:  $3.50");
+        System.out.println("  3-Taco:  $9.00");
+        System.out.println("  Burrito: $8.50");
 
+        System.out.println("\n==== Toppings (per size) ====");
+        System.out.println("Meats (carne asada, al pastor, carnitas, pollo, chorizo, pescado)");
+        System.out.println("  Single:  $1.00  |  3-Taco: $2.00  |  Burrito: $3.00");
+        System.out.println("\nExtra Meat:");
+        System.out.println("  Single:  $0.50  |  3-Taco: $1.00  |  Burrito: $1.50");
+
+        System.out.println("\nCheese (Queso Fresco, Oaxaca, Cotija, Cheddar)");
+        System.out.println("  Single:  $0.75  |  3-Taco: $1.50  |  Burrito: $2.25");
+        System.out.println("\nExtra Cheese:");
+        System.out.println("  Single:  $0.30  |  3-Taco: $0.60  |  Burrito: $0.90");
+
+        System.out.println("\nRegular Toppings (included in price):");
+        System.out.println("  lettuce, cilantro, onions, tomatoes, jalapeños,");
+        System.out.println("  radishes, pico de gallo, guacamole, corn");
+        System.out.println("Deep fried option: Single +$0.75 | 3-Taco +$1.50 | Burrito +$2.25");
+        System.out.println("=========================================\n");
+    }
+
+    private static void printToppings(List<Topping> toppings) {
+        if (toppings.isEmpty()) {
+            System.out.println("  • None");
+            return;
+        }
+        for (Topping t : toppings) {
+            if (t.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+                System.out.println("  • " + t.getName() + " (+" + t.getPrice() + ")");
+            } else {
+                System.out.println("  • " + t.getName() + " (included)");
+            }
+        }
+    }
+
+    // -------------------- SAVE RECEIPT --------------------
     private static void saveReceipt(Order order) {
         try {
             Path dir = Paths.get("src", "main", "resources", "receipts");
@@ -259,11 +416,8 @@ public class Main {
         }
     }
 
-    // --------------------------------------------------------------------
-
     private static boolean readYesNo() {
         String input = sc.nextLine().trim().toLowerCase();
-        // treat anything starting with 'y' as yes
         return input.startsWith("y");
     }
 }
